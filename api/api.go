@@ -30,16 +30,19 @@ type Client struct {
 	AcquireOptions rate.AcquireOptions
 }
 
-func NewClient(token string) *Client {
-	return NewCustomClient(token, httputil.NewClient())
+func NewClient(token, userAgent string) *Client {
+	return NewCustomClient(token, userAgent, httputil.NewClient())
 }
 
-func NewCustomClient(token string, httpClient *httputil.Client) *Client {
+func NewCustomClient(token, userAgent string, httpClient *httputil.Client) *Client {
+	if userAgent == "" {
+		userAgent = UserAgent
+	}
 	c := &Client{
 		Session: &Session{
 			Limiter:   rate.NewLimiter(Path),
 			Token:     token,
-			UserAgent: UserAgent,
+			UserAgent: userAgent,
 		},
 		Client: httpClient.Copy(),
 	}

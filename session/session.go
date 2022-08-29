@@ -65,9 +65,9 @@ func New(token string) *Session {
 }
 
 // Login tries to log in as a normal user account; MFA is optional.
-func Login(ctx context.Context, email, password, mfa string) (*Session, error) {
+func Login(ctx context.Context, email, password, userAgent, mfa string) (*Session, error) {
 	// Make a scratch HTTP client without a token
-	client := api.NewClient("").WithContext(ctx)
+	client := api.NewClient("", userAgent).WithContext(ctx)
 
 	// Try to login without TOTP
 	l, err := client.Login(email, password)
@@ -96,14 +96,14 @@ func Login(ctx context.Context, email, password, mfa string) (*Session, error) {
 
 // NewWithIdentifier creates a bare Session with the given identifier.
 func NewWithIdentifier(id gateway.Identifier) *Session {
-	return NewCustom(id, api.NewClient(id.Token), handler.New())
+	return NewCustom(id, api.NewClient(id.Token, ""), handler.New())
 }
 
 // NewWithGateway constructs a bare Session from the given UNOPENED gateway.
 func NewWithGateway(g *gateway.Gateway, h *handler.Handler) *Session {
 	state := g.State()
 	return &Session{
-		Client:  api.NewClient(state.Identifier.Token),
+		Client:  api.NewClient(state.Identifier.Token, ""),
 		Handler: h,
 		state: &sessionState{
 			gateway: g,
